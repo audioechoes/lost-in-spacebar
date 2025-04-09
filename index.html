@@ -22,11 +22,8 @@
       width: 100%;
       height: 100vh;
       box-sizing: border-box;
-      border: 4px solid black; /* Thin frame */
+      border: 4px solid black; /* Thin lo-fi frame */
       background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     canvas {
@@ -36,6 +33,7 @@
       width: 100%;
       height: 100%;
       display: block;
+      background: white;
     }
 
     .start-screen {
@@ -45,17 +43,16 @@
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 10;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.95);
       border: 1px solid black;
-      padding: 40px 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      padding: 30px 15px;
       max-width: 80%;
     }
 
     #start-description {
       font-size: 1rem;
       line-height: 1.6;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       color: black;
       white-space: pre-line;
       pointer-events: none;
@@ -63,16 +60,11 @@
 
     #start-btn {
       font-size: 1rem;
-      padding: 10px 20px;
-      background: transparent;
+      padding: 8px 16px;
+      background: white;
       border: 1px solid black;
       color: black;
       cursor: pointer;
-    }
-
-    #start-btn:hover {
-      background: black;
-      color: white;
     }
 
     .start-screen.hidden {
@@ -84,7 +76,7 @@
       grid-template-areas: 
         ".    up    ."
         "left down right";
-      gap: 6px;
+      gap: 5px;
       position: absolute;
       bottom: 10px;
       left: 10px;
@@ -95,9 +87,9 @@
     }
 
     .btn {
-      padding: 8px;
+      padding: 6px;
       font-size: 1rem;
-      background: transparent;
+      background: white;
       border: 1px solid black;
       color: black;
       text-align: center;
@@ -116,7 +108,6 @@
       }
     }
 
-    /* Portrait layout handling */
     @media (max-width: 768px) {
       .game-wrapper {
         aspect-ratio: 9 / 16;
@@ -218,7 +209,7 @@
       }
 
       function spawnWord() {
-        const words = ["Audio", "Echo"];
+        const words = ["Audio", "Echoes"];
         const text = words[Math.floor(Math.random() * words.length)];
         const fontSize = canvas.width / 30;
         ctx.font = `${fontSize}px 'IBM Plex Mono'`;

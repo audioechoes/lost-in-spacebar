@@ -21,6 +21,12 @@
       position: relative;
       width: 100%;
       height: 100vh;
+      box-sizing: border-box;
+      border: 4px solid black; /* Thin frame */
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     canvas {
@@ -109,6 +115,21 @@
         display: none;
       }
     }
+
+    /* Portrait layout handling */
+    @media (max-width: 768px) {
+      .game-wrapper {
+        aspect-ratio: 9 / 16;
+        max-height: 100vh;
+        max-width: 100vw;
+        margin: auto;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -118,7 +139,7 @@
     <div class="start-screen" id="start-screen">
       <div id="start-description">
         Lost in space (bar)  
-        Move left / right  
+        Use arrow keys to move  
         Hang on for 60 seconds  
         Why? (Would you rather be working?)
       </div>
@@ -269,7 +290,7 @@
         player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
       }
 
-      // Keyboard
+      // Keyboard controls
       window.addEventListener("keydown", e => {
         if (e.key === "ArrowLeft") movePlayer(-1, 0);
         else if (e.key === "ArrowRight") movePlayer(1, 0);
@@ -277,7 +298,7 @@
         else if (e.key === "ArrowDown") movePlayer(0, 1);
       });
 
-      // Touch
+      // Touch controls
       document.getElementById("left-btn").addEventListener("touchstart", () => movePlayer(-1, 0));
       document.getElementById("right-btn").addEventListener("touchstart", () => movePlayer(1, 0));
       document.getElementById("up-btn").addEventListener("touchstart", () => movePlayer(0, -1));

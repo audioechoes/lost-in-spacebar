@@ -232,10 +232,23 @@
 
         if (showStartScreen) return;
 
-        // Draw player
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-        ctx.fill();
+        // Draw Dan's trail
+ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Draw Dan's outline
+ctx.beginPath();
+ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+ctx.strokeStyle = "black";
+ctx.lineWidth = 2;
+ctx.stroke();
+
+// Draw Dan's solid core
+ctx.fillStyle = "black";
+ctx.beginPath();
+ctx.arc(player.x, player.y, player.radius * 0.6, 0, Math.PI * 2);
+ctx.fill();
+
 
         // Draw words
         fallingWords.forEach(word => {

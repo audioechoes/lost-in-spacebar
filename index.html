@@ -74,18 +74,21 @@
     }
 
     .controls {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-areas: 
+        ".    up    ."
+        "left down right";
+      gap: 6px;
       position: absolute;
       bottom: 10px;
       left: 10px;
       right: 10px;
-      gap: 5px;
+      width: 150px;
+      margin: auto;
       z-index: 9;
     }
 
     .btn {
-      flex: 1;
       padding: 8px;
       font-size: 1rem;
       background: transparent;
@@ -95,6 +98,11 @@
       font-family: 'IBM Plex Mono', monospace;
       user-select: none;
     }
+
+    #up-btn    { grid-area: up; }
+    #down-btn  { grid-area: down; }
+    #left-btn  { grid-area: left; }
+    #right-btn { grid-area: right; }
 
     @media (min-width: 768px) {
       .controls {
@@ -118,8 +126,10 @@
     </div>
 
     <div class="controls" id="touch-controls">
+      <div class="btn" id="up-btn">UP</div>
       <div class="btn" id="left-btn">LEFT</div>
       <div class="btn" id="right-btn">RIGHT</div>
+      <div class="btn" id="down-btn">DOWN</div>
     </div>
   </div>
 
@@ -155,7 +165,7 @@
 
         player = {
           x: canvas.width / 2,
-          y: canvas.height * 0.9,
+          y: canvas.height / 2,
           radius: 10
         };
 
@@ -166,7 +176,7 @@
 
         gameRunning = true;
         startScreen.classList.add('hidden');
-        touchControls.style.display = isMobile() ? 'flex' : 'none';
+        touchControls.style.display = isMobile() ? 'grid' : 'none';
 
         requestAnimationFrame(update);
       }
@@ -189,7 +199,7 @@
       function spawnWord() {
         const words = ["Audio", "Echo"];
         const text = words[Math.floor(Math.random() * words.length)];
-        const fontSize = canvas.width / 20;
+        const fontSize = canvas.width / 30;
         ctx.font = `${fontSize}px 'IBM Plex Mono'`;
         const textWidth = ctx.measureText(text).width;
 
@@ -251,20 +261,29 @@
         requestAnimationFrame(update);
       }
 
-      function movePlayer(dir) {
-        player.x += dir * 20;
+      function movePlayer(dirX, dirY) {
+        player.x += dirX * 20;
+        player.y += dirY * 20;
+
         player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
       }
 
-      startBtn.addEventListener('click', () => startGame());
+      // Keyboard
       window.addEventListener("keydown", e => {
-        if (e.key === "ArrowLeft") movePlayer(-1);
-        else if (e.key === "ArrowRight") movePlayer(1);
+        if (e.key === "ArrowLeft") movePlayer(-1, 0);
+        else if (e.key === "ArrowRight") movePlayer(1, 0);
+        else if (e.key === "ArrowUp") movePlayer(0, -1);
+        else if (e.key === "ArrowDown") movePlayer(0, 1);
       });
 
-      document.getElementById("left-btn").addEventListener("touchstart", () => movePlayer(-1));
-      document.getElementById("right-btn").addEventListener("touchstart", () => movePlayer(1));
+      // Touch
+      document.getElementById("left-btn").addEventListener("touchstart", () => movePlayer(-1, 0));
+      document.getElementById("right-btn").addEventListener("touchstart", () => movePlayer(1, 0));
+      document.getElementById("up-btn").addEventListener("touchstart", () => movePlayer(0, -1));
+      document.getElementById("down-btn").addEventListener("touchstart", () => movePlayer(0, 1));
 
+      startBtn.addEventListener('click', () => startGame());
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
       draw();

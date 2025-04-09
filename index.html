@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lost in Space(bar)</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: white;
+      font-family: 'IBM Plex Mono', monospace;
+      color: black;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .start-screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid black;
+      padding: 40px 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      max-width: 80%;
+    }
+
+    #start-description {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      color: black;
+      white-space: pre-line;
+      pointer-events: none;
+    }
+
+    #start-btn {
+      font-size: 1rem;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid black;
+      color: black;
+      cursor: pointer;
+    }
+
+    #start-btn:hover {
+      background: black;
+      color: white;
+    }
+
+    .start-screen.hidden {
+      display: none;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      gap: 5px;
+      z-index: 9;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 1rem;
+      background: transparent;
+      border: 1px solid black;
+      color: black;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <canvas id="game-canvas"></canvas>
+
+    <div class="start-screen" id="start-screen">
+      <div id="start-description">
+        Lost in space (bar)  
+        Move left / right  
+        Hang on for 60 seconds  
+        Why? (Would you rather be working?)
+      </div>
+      <button id="start-btn">Start</button>
+    </div>
+
+    <div class="controls" id="touch-controls">
+      <div class="btn" id="left-btn">LEFT</div>
+      <div class="btn" id="right-btn">RIGHT</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+
+      let player, fallingWords, timer = 60, timerInterval;
+      let gameRunning = false, gameOver = false, gameWon = false, showStartScreen = true;
+
+      const startBtn = document.getElementById('start-btn');
+      const startDesc = document.getElementById('start-description');
+      const startScreen = document.getElementById('start-screen');
+      const touchControls = document.getElementById('touch-controls');
+
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        if (!gameRunning || showStartScreen) draw();
+      }
+
+      function startGame() {
+        resizeCanvas();
+        gameOver = gameWon = false;
+        fallingWords = [];
+        timer = 60;
+        showStartScreen = false;
+
+        player = {
+          x: canvas.width / 2,
+          y: canvas.height * 0.9,
+          radius: 10
+        };
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (timer-- <= 0) endGame(true);
+        }, 1000);
+
+        gameRunning = true;
+        startScreen.classList.add('hidden');
+        touchControls.style.display = isMobile() ? 'flex' : 'none';
+
+        requestAnimationFrame(update);
+      }
+
+      function endGame(win) {
+        clearInterval(timerInterval);
+        gameRunning = false;
+        gameOver = !win;
+        gameWon = win;
+        touchControls.style.display = 'none';
+
+        startDesc.innerText = win
+          ? "You win! (but at what cost?)"
+          : "You lose! (not for the first time)";
+        startBtn.innerText = "Restart";
+        startScreen.classList.remove('hidden');
+        draw();
+      }
+
+      function spawnWord() {
+        const words = ["Audio", "Echo"];
+        const text = words[Math.floor(Math.random() * words.length)];
+        const fontSize = canvas.width / 20;
+        ctx.font = `${fontSize}px 'IBM Plex Mono'`;
+        const textWidth = ctx.measureText(text).width;
+
+        fallingWords.push({
+          text,
+          x: Math.random() * (canvas.width - textWidth),
+          y: -fontSize,
+          vy: 2 + Math.random() * 2,
+          fontSize
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.font = "16px 'IBM Plex Mono'";
+        ctx.fillText(`Time: ${timer}`, 10, 30);
+
+        if (showStartScreen) return;
+
+        // Draw player
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw words
+        fallingWords.forEach(word => {
+          ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
+          ctx.fillText(word.text, word.x, word.y);
+        });
+      }
+
+      function update() {
+        if (!gameRunning) return;
+
+        if (Math.random() < 0.02) spawnWord();
+
+        fallingWords.forEach(word => {
+          word.y += word.vy;
+
+          ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
+          const w = ctx.measureText(word.text).width;
+          const h = word.fontSize;
+
+          if (
+            player.x + player.radius > word.x &&
+            player.x - player.radius < word.x + w &&
+            player.y + player.radius > word.y &&
+            player.y - player.radius < word.y + h
+          ) {
+            endGame(false);
+          }
+        });
+
+        fallingWords = fallingWords.filter(w => w.y < canvas.height + 100);
+
+        draw();
+        requestAnimationFrame(update);
+      }
+
+      function movePlayer(dir) {
+        player.x += dir * 20;
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+      }
+
+      startBtn.addEventListener('click', () => startGame());
+      window.addEventListener("keydown", e => {
+        if (e.key === "ArrowLeft") movePlayer(-1);
+        else if (e.key === "ArrowRight") movePlayer(1);
+      });
+
+      document.getElementById("left-btn").addEventListener("touchstart", () => movePlayer(-1));
+      document.getElementById("right-btn").addEventListener("touchstart", () => movePlayer(1));
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      draw();
+    })();
+  </script>
+</body>
+</html>

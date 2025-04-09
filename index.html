@@ -245,9 +245,17 @@
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Floating words
+        // Floating words with aura
         fallingWords.forEach(word => {
           ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
+
+          // aura
+          ctx.fillStyle = "rgba(0,0,0,0.05)";
+          const w = ctx.measureText(word.text).width;
+          ctx.fillRect(word.x - 4, word.y - 2, w + 8, word.fontSize + 4);
+
+          // text
+          ctx.fillStyle = "black";
           ctx.fillText(word.text, word.x, word.y);
         });
       }
@@ -255,7 +263,7 @@
       function update() {
         if (!gameRunning) return;
 
-        if (Math.random() < 0.025) spawnWord(); // +25% more
+        if (Math.random() < 0.025) spawnWord(); // 25% more words
 
         fallingWords.forEach(word => {
           word.y += word.vy;
@@ -265,11 +273,13 @@
           const w = ctx.measureText(word.text).width;
           const h = word.fontSize;
 
+          const padding = 6; // tighter collision zone
+
           if (
-            player.x + player.radius > word.x &&
-            player.x - player.radius < word.x + w &&
-            player.y + player.radius > word.y &&
-            player.y - player.radius < word.y + h
+            player.x + player.radius > word.x + padding &&
+            player.x - player.radius < word.x + w - padding &&
+            player.y + player.radius > word.y + padding &&
+            player.y - player.radius < word.y + h - padding
           ) {
             endGame(false);
           }

@@ -129,7 +129,7 @@
     <div class="start-screen" id="start-screen">
       <div id="start-description">
         Lost in space (bar)  
-        Use arrow keys to move  
+        Use arrow keys or touch to move  
         Hang on for 60 seconds  
         Why? (Would you rather be working?)
       </div>
@@ -151,6 +151,9 @@
 
       let player, fallingWords, timer = 60, timerInterval;
       let gameRunning = false, gameOver = false, gameWon = false, showStartScreen = true;
+
+      let keys = {};
+      let velocity = { x: 0, y: 0 };
 
       const startBtn = document.getElementById('start-btn');
       const startDesc = document.getElementById('start-description');
@@ -179,6 +182,9 @@
           y: canvas.height / 2,
           radius: 10
         };
+
+        keys = {};
+        velocity = { x: 0, y: 0 };
 
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -218,8 +224,8 @@
           text,
           x: Math.random() * (canvas.width - textWidth),
           y: -fontSize,
-          vy: 1 + Math.random() * 1.5,
-          vx: (Math.random() - 0.5) * 0.5,
+          vy: 0.5 + Math.random() * 1,
+          vx: (Math.random() - 0.5) * 1,
           fontSize
         });
       }
@@ -239,7 +245,7 @@
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Falling words
+        // Floating words
         fallingWords.forEach(word => {
           ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
           ctx.fillText(word.text, word.x, word.y);
@@ -249,7 +255,7 @@
       function update() {
         if (!gameRunning) return;
 
-        if (Math.random() < 0.02) spawnWord();
+        if (Math.random() < 0.025) spawnWord(); // +25% more
 
         fallingWords.forEach(word => {
           word.y += word.vy;
@@ -271,24 +277,32 @@
 
         fallingWords = fallingWords.filter(w => w.y < canvas.height + 100);
 
+        // Smooth Dan movement
+        if (keys["ArrowLeft"]) velocity.x = -2;
+        else if (keys["ArrowRight"]) velocity.x = 2;
+        else velocity.x = 0;
+
+        if (keys["ArrowUp"]) velocity.y = -2;
+        else if (keys["ArrowDown"]) velocity.y = 2;
+        else velocity.y = 0;
+
+        player.x += velocity.x;
+        player.y += velocity.y;
+
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
         draw();
         requestAnimationFrame(update);
       }
 
-      function movePlayer(dirX, dirY) {
-        player.x += dirX * 20;
-        player.y += dirY * 20;
-
-        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
-        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
-      }
-
-      // Keyboard controls
+      // Keyboard listeners
       window.addEventListener("keydown", e => {
-        if (e.key === "ArrowLeft") movePlayer(-1, 0);
-        else if (e.key === "ArrowRight") movePlayer(1, 0);
-        else if (e.key === "ArrowUp") movePlayer(0, -1);
-        else if (e.key === "ArrowDown") movePlayer(0, 1);
+        keys[e.key] = true;
+      });
+
+      window.addEventListener("keyup", e => {
+        keys[e.key] = false;
       });
 
       // Touch controls
@@ -296,6 +310,11 @@
       document.getElementById("right-btn").addEventListener("touchstart", () => movePlayer(1, 0));
       document.getElementById("up-btn").addEventListener("touchstart", () => movePlayer(0, -1));
       document.getElementById("down-btn").addEventListener("touchstart", () => movePlayer(0, 1));
+
+      function movePlayer(dirX, dirY) {
+        velocity.x = dirX * 2;
+        velocity.y = dirY * 2;
+      }
 
       startBtn.addEventListener('click', () => startGame());
       window.addEventListener("resize", resizeCanvas);

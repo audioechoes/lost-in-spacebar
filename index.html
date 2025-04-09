@@ -218,7 +218,8 @@
           text,
           x: Math.random() * (canvas.width - textWidth),
           y: -fontSize,
-          vy: 2 + Math.random() * 2,
+          vy: 1 + Math.random() * 1.5,
+          vx: (Math.random() - 0.5) * 0.5,
           fontSize
         });
       }
@@ -232,25 +233,13 @@
 
         if (showStartScreen) return;
 
-        // Draw Dan's trail
-ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Dan the Dot
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
 
-// Draw Dan's outline
-ctx.beginPath();
-ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-ctx.strokeStyle = "black";
-ctx.lineWidth = 2;
-ctx.stroke();
-
-// Draw Dan's solid core
-ctx.fillStyle = "black";
-ctx.beginPath();
-ctx.arc(player.x, player.y, player.radius * 0.6, 0, Math.PI * 2);
-ctx.fill();
-
-
-        // Draw words
+        // Falling words
         fallingWords.forEach(word => {
           ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
           ctx.fillText(word.text, word.x, word.y);
@@ -264,6 +253,7 @@ ctx.fill();
 
         fallingWords.forEach(word => {
           word.y += word.vy;
+          word.x += word.vx;
 
           ctx.font = `${word.fontSize}px 'IBM Plex Mono'`;
           const w = ctx.measureText(word.text).width;
